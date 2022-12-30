@@ -116,43 +116,30 @@ class RegisterationController: UIViewController {
         guard let username = userNameTextField.text?.lowercased() else { return }
         guard let profileImage = profileImage else { return }
         
-        guard let imageData = profileImage.jpegData(compressionQuality: 0.75) else { return }
+        let credentials = AuthCredentials(email: email, password: password, fullname: fullname, username: username, profileImage: profileImage)
         
-        let filename = NSUUID().uuidString
-        let ref = Storage.storage().reference(withPath: "/profile_images/\(filename)")
-        
-        ref.putData(imageData, metadata: nil) { (meta, error) in
+        // showLoader(true, withText: "Signing You Up")
+        AuthService.shared.createUser(credentials: credentials) { error in
             if let error = error {
-                print("Debug: Failed to upload image with error \(error.localizedDescription)")
+                print("Failed to Create User .. \(error.localizedDescription)")
+                // self.showLoader(false)
                 return
             }
             
-            ref.downloadURL { (url, error) in
-                guard let profileImageUrl = url?.absoluteString else { return }
-                Auth.auth().createUser(withEmail: email, password: password) { (result, error) in
-                    if let error = error {
-                        print("Debug: Fail to create user with error: \(error.localizedDescription)")
-                        return
-                    }
-                    
-                    guard let uid = result?.user.uid else { return }
-                    
-                    let data = ["email": email,
-                                "fullname": fullname,
-                                "profileImageUrl": profileImageUrl,
-                                "uid": uid,
-                                "username": username] as [String: Any]
-                    
-                    Firestore.firestore().collection("users").document(uid).setData(data) { error in
-                        if let error = error {
-                            print("Debug: Failed to upload user data with error: \(error.localizedDescription)")
-                            return
-                        }
-                        print("Debug: Did create user...")
-                        self.dismiss(animated: true, completion: nil)
-                    }
-                }
-            }
+            // self.showLoader(false)
+            self.dismiss(animated: true, completion: nil)
+        }
+    }
+    
+    @objc func keyboardWillShow() {
+        if view.frame.origin.y == 0 {
+            self.view.frame.origin.y -= 130
+        }
+    }
+    
+    @objc func keyboardWillHide() {
+        if view.frame.origin.y != 0 {
+            self.view.frame.origin.y = 0
         }
     }
     
@@ -210,6 +197,9 @@ class RegisterationController: UIViewController {
         passwordTextField.addTarget(self, action: #selector(textDidChange), for: .editingChanged)
         fullNameTextField.addTarget(self, action: #selector(textDidChange), for: .editingChanged)
         userNameTextField.addTarget(self, action: #selector(textDidChange), for: .editingChanged)
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
     }
 }
 
