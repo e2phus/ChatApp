@@ -15,6 +15,15 @@ class ConversationsController: UIViewController {
     // MARK: - Properties
     private let tableView = UITableView()
     
+    private let newMessageButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setImage(UIImage(systemName: "plus"), for: .normal)
+        button.backgroundColor = .systemPurple
+        button.tintColor = .white
+        button.addTarget(self, action: #selector(showNewMessage), for: .touchUpInside)
+        return button
+    }()
+    
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -26,6 +35,14 @@ class ConversationsController: UIViewController {
     @objc func showProfile() {
         print("DEBUG: Show Profile")
         logout()
+    }
+    
+    @objc func showNewMessage() {
+        print(#function)
+        let controller = NewMessageController()
+        let navigation = UINavigationController(rootViewController: controller)
+        navigation.modalPresentationStyle = .fullScreen
+        present(navigation, animated: true, completion: nil)
     }
     
     // MARK: - API
@@ -50,8 +67,23 @@ class ConversationsController: UIViewController {
     // MARK: - Helpers
     func configureUI() {
         view.backgroundColor = .white
-        configureNavigationBar()
+        configureNavigationBar(withTitle: "Message", prefersLargeTitles: true)
         configureTableView()
+        configureLayout()
+        
+        let image = UIImage(systemName: "person.circle.fill")
+        navigationItem.leftBarButtonItem = UIBarButtonItem(image: image, style: .plain, target: self, action: #selector(showProfile))
+    }
+    
+    func configureLayout() {
+        view.addSubview(newMessageButton)
+        newMessageButton.translatesAutoresizingMaskIntoConstraints = false
+        newMessageButton.heightAnchor.constraint(equalToConstant: 48).isActive = true
+        newMessageButton.widthAnchor.constraint(equalToConstant: 48).isActive = true
+        newMessageButton.clipsToBounds = true
+        newMessageButton.layer.cornerRadius = 24
+        newMessageButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -32).isActive = true
+        newMessageButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -32).isActive = true
     }
     
     func configureTableView() {
@@ -64,27 +96,6 @@ class ConversationsController: UIViewController {
         
         view.addSubview(tableView)
         tableView.frame = view.frame
-    }
-    
-    func configureNavigationBar() {
-        let appearance = UINavigationBarAppearance()
-        appearance.configureWithOpaqueBackground()
-        appearance.largeTitleTextAttributes = [.foregroundColor: UIColor.white]
-        appearance.backgroundColor = .systemPurple
-        
-        navigationController?.navigationBar.standardAppearance = appearance
-        navigationController?.navigationBar.compactAppearance = appearance
-        navigationController?.navigationBar.scrollEdgeAppearance = appearance
-        
-        navigationController?.navigationBar.prefersLargeTitles = true
-        navigationItem.title = "Messages"
-        navigationController?.navigationBar.tintColor = .white
-        navigationController?.navigationBar.isTranslucent = true
-        
-        navigationController?.navigationBar.overrideUserInterfaceStyle = .dark
-        
-        let image = UIImage(systemName: "person.circle.fill")
-        navigationItem.leftBarButtonItem = UIBarButtonItem(image: image, style: .plain, target: self, action: #selector(showProfile))
     }
     
     func presentLoginScreen() {
