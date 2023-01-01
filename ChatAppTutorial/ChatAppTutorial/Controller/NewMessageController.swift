@@ -8,16 +8,18 @@
 import UIKit
 import SDWebImage
 
+protocol NewMessageControllerDelegate: AnyObject {
+    func controller(_ controller: NewMessageController, wantsToStartChatWith user: User)
+}
+
 private let reuseIdentifier = "UserCell"
 
 class NewMessageController: UITableViewController {
     
     // MARK: - Properties
-    
     private var users = [User]()
+    weak var delegate: NewMessageControllerDelegate?
 
-    
-    
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -71,5 +73,12 @@ extension NewMessageController {
         let cell = tableView.dequeueReusableCell(withIdentifier: reuseIdentifier, for: indexPath) as! UserCell
         cell.user = users[indexPath.row]
         return cell
+    }
+}
+
+extension NewMessageController {
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        print("Selected user is \(users[indexPath.row].username)")
+        delegate?.controller(self, wantsToStartChatWith: users[indexPath.row])
     }
 }
