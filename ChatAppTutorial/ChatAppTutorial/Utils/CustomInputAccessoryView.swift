@@ -16,7 +16,7 @@ class CustomInputAccessoryView: UIView {
     // MARK: - Properties
     weak var delegate: CustomInputAccessoryViewDelegate?
     
-    lazy var messageInputTextView: UITextView = {
+    private lazy var messageInputTextView: UITextView = {
         let textView = UITextView()
         textView.font = UIFont.systemFont(ofSize: 16)
         textView.isScrollEnabled = false
@@ -96,5 +96,11 @@ class CustomInputAccessoryView: UIView {
         placeholderLabel.translatesAutoresizingMaskIntoConstraints = false
         placeholderLabel.leadingAnchor.constraint(equalTo: messageInputTextView.leadingAnchor, constant: 6).isActive = true
         placeholderLabel.centerYAnchor.constraint(equalTo: messageInputTextView.centerYAnchor).isActive = true
+    }
+    
+    func clearMessageText() {
+        messageInputTextView.text = nil
+        placeholderLabel.isHidden = false
+        
     }
 }

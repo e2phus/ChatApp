@@ -75,6 +75,7 @@ class ChatCell: UICollectionViewCell {
         addSubview(bubbleContainer)
         bubbleContainer.translatesAutoresizingMaskIntoConstraints = false
         bubbleContainer.topAnchor.constraint(equalTo: topAnchor).isActive = true
+        bubbleContainer.bottomAnchor.constraint(equalTo: bottomAnchor).isActive = true
         bubbleContainer.widthAnchor.constraint(lessThanOrEqualToConstant: 250).isActive = true
         bubbleContainer.layer.cornerRadius = 12
         
@@ -104,6 +105,7 @@ class ChatCell: UICollectionViewCell {
         bubbleRightAnchor.isActive = viewModel.rightAnchorActive
         
         profileImageView.isHidden = viewModel.shouldHideProfileImage
+        profileImageView.sd_setImage(with: viewModel.profileImageUrl)
     }
 
 }
