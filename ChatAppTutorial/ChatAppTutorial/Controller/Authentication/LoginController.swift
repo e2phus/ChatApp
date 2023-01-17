@@ -6,16 +6,23 @@
 //
 
 import UIKit
+import SnapKit
 import Firebase
 
 protocol AuthenticationControllerProtocol {
     func checkFormStatus()
 }
 
+protocol AuthenticationDelegate: AnyObject {
+    func authenticationComplete()
+}
+
+
 class LoginController: UIViewController {
     
     // MARK: - Properties
     private var viewModel = LoginViewModel()
+    weak var delegate: AuthenticationDelegate?
     
     private let iconImage: UIImageView = {
         let imageView = UIImageView()
@@ -40,20 +47,20 @@ class LoginController: UIViewController {
         return textField
     }()
     
-    private let loginButton: UIButton = {
+    private lazy var loginButton: UIButton = {
         let button = UIButton(type: .system)
         button.heightAnchor.constraint(equalToConstant: 50).isActive = true
         button.setTitle("Log In", for: .normal)
         button.setTitleColor(.white, for: .normal)
         button.layer.cornerRadius = 10
         button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 16)
-        button.backgroundColor = #colorLiteral(red: 1, green: 0.9468354911, blue: 0.7528250811, alpha: 1).withAlphaComponent(0.3)
+        button.backgroundColor = #colorLiteral(red: 1, green: 0.9468354911, blue: 0.7528250811, alpha: 1).withAlphaComponent(0.1)
         button.isEnabled = false
         button.addTarget(self, action: #selector(handleLogin), for: .touchUpInside)
         return button
     }()
     
-    private let dontHaveAccountButton: UIButton = {
+    private lazy var dontHaveAccountButton: UIButton = {
         let button = UIButton(type: .system)
         let attributedTitle = NSMutableAttributedString(string: "Don't have an account? ",
                                                         attributes: [.font: UIFont.systemFont(ofSize: 16),
@@ -78,21 +85,23 @@ class LoginController: UIViewController {
         guard let email = emailTextField.text else { return }
         guard let password = passwordTextField.text else { return }
         
-        // showLoader(true, withText: "Logging In")
+        showLoader(true)
         
         AuthService.shared.logUserIn(withEmail: email, password: password) { result, error in
             if let error = error {
-                print("Failed to login with error \(error.localizedDescription)")
-                // self.showLoader(false)
+                self.showLoader(false)
+                self.showError(error.localizedDescription)
                 return
             }
-            // self.showLoader(false)
+            self.showLoader(false)
             self.dismiss(animated: true, completion: nil)
+            self.delegate?.authenticationComplete()
         }
     }
     
     @objc func handleShowSignUp() {
         let controller = RegisterationController()
+        controller.delegate = delegate
         navigationController?.pushViewController(controller, animated: true)
     }
     
@@ -127,28 +136,30 @@ class LoginController: UIViewController {
     func configureLayout() {
         // IconImageView
         view.addSubview(iconImage)
-        iconImage.translatesAutoresizingMaskIntoConstraints = false
-        iconImage.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 32).isActive = true
-        iconImage.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-        iconImage.heightAnchor.constraint(equalToConstant: 120).isActive = true
-        iconImage.widthAnchor.constraint(equalToConstant: 120).isActive = true
+        iconImage.snp.makeConstraints {
+            $0.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(32)
+            $0.centerX.equalTo(view.snp.centerX)
+            $0.height.width.equalTo(120)
+        }
         
         // StackView
         let stackView = UIStackView(arrangedSubviews: [emailContainerView, passwordContainerView, loginButton])
         stackView.axis = .vertical
         stackView.spacing = 16
         view.addSubview(stackView)
-        stackView.translatesAutoresizingMaskIntoConstraints = false
-        stackView.topAnchor.constraint(equalTo: iconImage.bottomAnchor, constant: 32).isActive = true
-        stackView.leadingAnchor.constraint(equalTo: view.leadingAnchor , constant: 32).isActive = true
-        stackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -32).isActive = true
+        stackView.snp.makeConstraints {
+            $0.top.equalTo(iconImage.snp.bottom).offset(32)
+            $0.left.equalTo(view.snp.left).offset(32)
+            $0.right.equalTo(view.snp.right).offset(-32)
+        }
         
         // DontHaveAccountButton
         view.addSubview(dontHaveAccountButton)
-        dontHaveAccountButton.translatesAutoresizingMaskIntoConstraints = false
-        dontHaveAccountButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor).isActive = true
-        dontHaveAccountButton.leadingAnchor.constraint(equalTo: view.leadingAnchor , constant: 32).isActive = true
-        dontHaveAccountButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -32).isActive = true
+        dontHaveAccountButton.snp.makeConstraints {
+            $0.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom)
+            $0.left.equalTo(view.snp.left).offset(32)
+            $0.right.equalTo(view.snp.right).offset(-32)
+        }
     }
     
     func configureNotificationObservers() {
@@ -162,10 +173,10 @@ extension LoginController: AuthenticationControllerProtocol {
     func checkFormStatus() {
         if viewModel.formIsValid {
             loginButton.isEnabled = true
-            loginButton.backgroundColor = #colorLiteral(red: 1, green: 0.9468354911, blue: 0.7528250811, alpha: 1).withAlphaComponent(0.5)
+            loginButton.backgroundColor = #colorLiteral(red: 1, green: 0.9468354911, blue: 0.7528250811, alpha: 1).withAlphaComponent(0.3)
         } else {
             loginButton.isEnabled = false
-            loginButton.backgroundColor = #colorLiteral(red: 1, green: 0.9468354911, blue: 0.7528250811, alpha: 1).withAlphaComponent(0.3)
+            loginButton.backgroundColor = #colorLiteral(red: 1, green: 0.9468354911, blue: 0.7528250811, alpha: 1).withAlphaComponent(0.1)
         }
     }
 }

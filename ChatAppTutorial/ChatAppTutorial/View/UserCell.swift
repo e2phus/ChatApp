@@ -18,7 +18,7 @@ class UserCell: UITableViewCell {
     
     private let profileImageView: UIImageView = {
         let imageView = UIImageView()
-        imageView.backgroundColor = .systemPurple
+        imageView.backgroundColor = .systemPink
         imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
         return imageView
@@ -49,31 +49,30 @@ class UserCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    // MARK: - Actions
-    
-    
     // MARK: - Helpers
     func configureLayout() {
         addSubview(profileImageView)
-        profileImageView.translatesAutoresizingMaskIntoConstraints = false
-        profileImageView.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
-        profileImageView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 12).isActive = true
-        profileImageView.widthAnchor.constraint(equalToConstant: 64).isActive = true
-        profileImageView.heightAnchor.constraint(equalToConstant: 64).isActive = true
+        profileImageView.snp.makeConstraints {
+            $0.centerY.equalTo(snp.centerY)
+            $0.left.equalTo(snp.left).offset(12)
+            $0.width.height.equalTo(64)
+        }
         profileImageView.layer.cornerRadius = 32
         
         let stackView = UIStackView(arrangedSubviews: [usernameLabel, fullnameLabel])
         stackView.axis = .vertical
         stackView.spacing = 2
         addSubview(stackView)
-        stackView.translatesAutoresizingMaskIntoConstraints = false
-        stackView.centerYAnchor.constraint(equalTo: profileImageView.centerYAnchor).isActive = true
-        stackView.leadingAnchor.constraint(equalTo: profileImageView.trailingAnchor, constant: 12).isActive = true
+        stackView.snp.makeConstraints {
+            $0.centerY.equalTo(profileImageView.snp.centerY)
+            $0.left.equalTo(profileImageView.snp.right).offset(12)
+        }
     }
     
     func configure() {
         guard let user = user else { return }
         guard let url = URL(string: user.profileImageUrl) else { return }
+        
         profileImageView.sd_setImage(with: url)
         fullnameLabel.text = user.fullname
         usernameLabel.text = user.username

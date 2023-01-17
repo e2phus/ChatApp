@@ -49,15 +49,12 @@ class ConversationCell: UITableViewCell {
     // MARK: - Lifecycle
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
+        configureLayout()
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
-    // MARK: - Actions
-    
-    
     
     // MARK: - Helpers
     func configure() {
@@ -68,18 +65,15 @@ class ConversationCell: UITableViewCell {
         messageTextLabel.text = conversation.message.text
         timestampLabel.text = viewModel.timestamp
         profileImageView.sd_setImage(with: viewModel.profileImageUrl)
-        
-        
-        
     }
     
     func configureLayout() {
         addSubview(profileImageView)
-        profileImageView.translatesAutoresizingMaskIntoConstraints = false
-        profileImageView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 12).isActive = true
-        profileImageView.widthAnchor.constraint(equalToConstant: 50).isActive = true
-        profileImageView.heightAnchor.constraint(equalToConstant: 50).isActive = true
-        profileImageView.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
+        profileImageView.snp.makeConstraints {
+            $0.left.equalTo(snp.left).offset(12)
+            $0.width.height.equalTo(50)
+            $0.centerY.equalTo(snp.centerY)
+        }
         profileImageView.layer.cornerRadius = 25
         
         let stackView = UIStackView(arrangedSubviews: [usernameLabel, messageTextLabel])
@@ -87,14 +81,16 @@ class ConversationCell: UITableViewCell {
         stackView.spacing = 4
         
         addSubview(stackView)
-        stackView.translatesAutoresizingMaskIntoConstraints = false
-        stackView.centerYAnchor.constraint(equalTo: profileImageView.centerYAnchor).isActive = true
-        stackView.leadingAnchor.constraint(equalTo: profileImageView.rightAnchor, constant: 12).isActive = true
-        stackView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16).isActive = true
+        stackView.snp.makeConstraints {
+            $0.centerY.equalTo(profileImageView.snp.centerY)
+            $0.left.equalTo(profileImageView.snp.right).offset(12)
+            $0.right.equalTo(snp.right).offset(-16)
+        }
         
         addSubview(timestampLabel)
-        timestampLabel.translatesAutoresizingMaskIntoConstraints = false
-        timestampLabel.topAnchor.constraint(equalTo: topAnchor, constant: 20).isActive = true
-        timestampLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -12).isActive = true
+        timestampLabel.snp.makeConstraints {
+            $0.top.equalTo(snp.top).offset(20)
+            $0.right.equalTo(snp.right).offset(-12)
+        }
     }
 }

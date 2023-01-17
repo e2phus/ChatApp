@@ -101,6 +101,5 @@ class CustomInputAccessoryView: UIView {
     func clearMessageText() {
         messageInputTextView.text = nil
         placeholderLabel.isHidden = false
-        
     }
 }

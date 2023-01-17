@@ -9,16 +9,16 @@ import UIKit
 import Firebase
 import FirebaseStorage
 import FirebaseAuth
-
-
+import SnapKit
 
 class RegisterationController: UIViewController {
     
     // MARK: - Properties
     private var viewModel = RegisterationViewModel()
     private var profileImage: UIImage?
+    weak var delegate: AuthenticationDelegate?
     
-    private let plusPhotoButton: UIButton = {
+    private lazy var plusPhotoButton: UIButton = {
         let button = UIButton(type: .system)
         button.setImage(#imageLiteral(resourceName: "plus_photo"), for: .normal)
         button.tintColor = .white
@@ -52,20 +52,20 @@ class RegisterationController: UIViewController {
         return textField
     }()
     
-    private let signUpButton: UIButton = {
+    private lazy var signUpButton: UIButton = {
         let button = UIButton(type: .system)
         button.heightAnchor.constraint(equalToConstant: 50).isActive = true
         button.setTitle("Sign Up", for: .normal)
         button.setTitleColor(.white, for: .normal)
         button.layer.cornerRadius = 10
         button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 16)
-        button.backgroundColor = #colorLiteral(red: 1, green: 0.9468354911, blue: 0.7528250811, alpha: 1).withAlphaComponent(0.3)
+        button.backgroundColor = #colorLiteral(red: 1, green: 0.9468354911, blue: 0.7528250811, alpha: 1).withAlphaComponent(0.1)
         button.isEnabled = false
         button.addTarget(self, action: #selector(handleRegisteration), for: .touchUpInside)
         return button
     }()
     
-    private let alreadyHaveAccountButton: UIButton = {
+    private lazy var alreadyHaveAccountButton: UIButton = {
         let button = UIButton(type: .system)
         let attributedTitle = NSMutableAttributedString(string: "Already have an account? ",
                                                         attributes: [.font: UIFont.systemFont(ofSize: 16),
@@ -118,16 +118,17 @@ class RegisterationController: UIViewController {
         
         let credentials = AuthCredentials(email: email, password: password, fullname: fullname, username: username, profileImage: profileImage)
         
-        // showLoader(true, withText: "Signing You Up")
+        showLoader(true)
         AuthService.shared.createUser(credentials: credentials) { error in
             if let error = error {
-                print("Failed to Create User .. \(error.localizedDescription)")
-                // self.showLoader(false)
+                self.showLoader(false)
+                self.showError(error.localizedDescription)
                 return
             }
             
-            // self.showLoader(false)
+            self.showLoader(false)
             self.dismiss(animated: true, completion: nil)
+            self.delegate?.authenticationComplete()
         }
     }
     
@@ -164,11 +165,11 @@ class RegisterationController: UIViewController {
     func configureLayout() {
         // PlusPhotoButton
         view.addSubview(plusPhotoButton)
-        plusPhotoButton.translatesAutoresizingMaskIntoConstraints = false
-        plusPhotoButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 32).isActive = true
-        plusPhotoButton.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-        plusPhotoButton.heightAnchor.constraint(equalToConstant: 200).isActive = true
-        plusPhotoButton.widthAnchor.constraint(equalToConstant: 200).isActive = true
+        plusPhotoButton.snp.makeConstraints {
+            $0.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(32)
+            $0.centerX.equalTo(view.snp.centerX)
+            $0.width.height.equalTo(200)
+        }
         
         // StackView
         let stackView = UIStackView(arrangedSubviews: [emailContainerView,
@@ -179,17 +180,19 @@ class RegisterationController: UIViewController {
         stackView.axis = .vertical
         stackView.spacing = 16
         view.addSubview(stackView)
-        stackView.translatesAutoresizingMaskIntoConstraints = false
-        stackView.topAnchor.constraint(equalTo: plusPhotoButton.bottomAnchor, constant: 32).isActive = true
-        stackView.leadingAnchor.constraint(equalTo: view.leadingAnchor , constant: 32).isActive = true
-        stackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -32).isActive = true
-        
+        stackView.snp.makeConstraints {
+            $0.top.equalTo(plusPhotoButton.snp.bottom).offset(32)
+            $0.left.equalTo(view.snp.left).offset(32)
+            $0.right.equalTo(view.snp.right).offset(-32)
+        }
+                
         // DontHaveAccountButton
         view.addSubview(alreadyHaveAccountButton)
-        alreadyHaveAccountButton.translatesAutoresizingMaskIntoConstraints = false
-        alreadyHaveAccountButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor).isActive = true
-        alreadyHaveAccountButton.leadingAnchor.constraint(equalTo: view.leadingAnchor , constant: 32).isActive = true
-        alreadyHaveAccountButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -32).isActive = true
+        alreadyHaveAccountButton.snp.makeConstraints {
+            $0.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom)
+            $0.left.equalTo(view.snp.left).offset(32)
+            $0.right.equalTo(view.snp.right).offset(-32)
+        }
     }
     
     func configureNotificationObservers() {
@@ -223,7 +226,7 @@ extension RegisterationController: AuthenticationControllerProtocol {
             signUpButton.backgroundColor = #colorLiteral(red: 1, green: 0.9468354911, blue: 0.7528250811, alpha: 1).withAlphaComponent(0.5)
         } else {
             signUpButton.isEnabled = false
-            signUpButton.backgroundColor = #colorLiteral(red: 1, green: 0.9468354911, blue: 0.7528250811, alpha: 1).withAlphaComponent(0.3)
+            signUpButton.backgroundColor = #colorLiteral(red: 1, green: 0.9468354911, blue: 0.7528250811, alpha: 1).withAlphaComponent(0.1)
         }
     }
 }

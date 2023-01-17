@@ -50,19 +50,16 @@ class ChatController: UICollectionViewController {
     
     // MARK: - API
     func fetchMessages() {
+        showLoader(true)
         Service.fetchMessages(forUser: user) { messages in
+            self.showLoader(false)
             self.messages = messages
             self.collectionView.reloadData()
             self.collectionView.scrollToItem(at: [0, self.messages.count - 1], at: .bottom, animated: true)
         }
     }
     
-    // MARK: - Actions
-    
-    
-    
     // MARK: - Helpers
-    
     func configureUI() {
         collectionView.backgroundColor = .white
         configureNavigationBar(withTitle: user.username, prefersLargeTitles: false)

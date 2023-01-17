@@ -20,25 +20,27 @@ class InputContainerView: UIView {
         imageView.alpha = 0.87
         
         addSubview(imageView)
-        imageView.translatesAutoresizingMaskIntoConstraints = false
-        imageView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 8).isActive = true
-        imageView.heightAnchor.constraint(equalToConstant: 24).isActive = true
-        imageView.widthAnchor.constraint(equalToConstant: 24).isActive = true
-        imageView.centerYAnchor.constraint(equalTo: self.centerYAnchor).isActive = true
+        imageView.snp.makeConstraints {
+            $0.left.equalTo(snp.left).offset(8)
+            $0.height.width.equalTo(24)
+            $0.centerY.equalTo(snp.centerY)
+        }
         
         addSubview(textField)
-        textField.translatesAutoresizingMaskIntoConstraints = false
-        textField.centerYAnchor.constraint(equalTo: self.centerYAnchor).isActive = true
-        textField.leadingAnchor.constraint(equalTo: imageView.trailingAnchor, constant: 8).isActive = true
+        textField.snp.makeConstraints {
+            $0.centerY.equalTo(snp.centerY)
+            $0.left.equalTo(imageView.snp.right).offset(8)
+        }
         
         let dividerView = UIView()
         dividerView.backgroundColor = .white.withAlphaComponent(0.75)
         addSubview(dividerView)
-        dividerView.translatesAutoresizingMaskIntoConstraints = false
-        dividerView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 8).isActive = true
-        dividerView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -8).isActive = true
-        dividerView.bottomAnchor.constraint(equalTo: self.bottomAnchor).isActive = true
-        dividerView.heightAnchor.constraint(equalToConstant: 0.75).isActive = true
+        dividerView.snp.makeConstraints {
+            $0.left.equalTo(snp.left).offset(8)
+            $0.right.equalTo(snp.right).offset(-8)
+            $0.bottom.equalTo(snp.bottom)
+            $0.height.equalTo(0.75)
+        }
     }
     
     required init?(coder: NSCoder) {

@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import SnapKit
 
 class ChatCell: UICollectionViewCell {
     
@@ -21,7 +22,7 @@ class ChatCell: UICollectionViewCell {
     
     private let profileImageView: UIImageView = {
         let imageView = UIImageView()
-        imageView.backgroundColor = .systemPurple
+        imageView.backgroundColor = .systemPink
         imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
         return imageView
@@ -40,7 +41,7 @@ class ChatCell: UICollectionViewCell {
     
     private let bubbleContainer: UIView = {
         let view = UIView()
-        view.backgroundColor = .systemPurple
+        view.backgroundColor = .systemPink
         return view
     }()
     
@@ -55,12 +56,6 @@ class ChatCell: UICollectionViewCell {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
-    
-    
-    // MARK: - Actions
-    
-    
     
     // MARK: - Helpers
     func configureLayout() {
@@ -107,5 +102,4 @@ class ChatCell: UICollectionViewCell {
         profileImageView.isHidden = viewModel.shouldHideProfileImage
         profileImageView.sd_setImage(with: viewModel.profileImageUrl)
     }
-
 }

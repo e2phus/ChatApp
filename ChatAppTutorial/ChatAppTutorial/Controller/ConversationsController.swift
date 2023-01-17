@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import SnapKit
 import Firebase
 
 private let reuseIdentifier = "ConversationCell"
@@ -15,11 +16,12 @@ class ConversationsController: UIViewController {
     // MARK: - Properties
     private let tableView = UITableView()
     private var conversations = [Conversation]()
+    private var conversationsDictionary = [String: Conversation]()
     
-    private let newMessageButton: UIButton = {
+    private lazy var newMessageButton: UIButton = {
         let button = UIButton(type: .system)
         button.setImage(UIImage(systemName: "plus"), for: .normal)
-        button.backgroundColor = .systemPurple
+        button.backgroundColor = .systemPink
         button.tintColor = .white
         button.addTarget(self, action: #selector(showNewMessage), for: .touchUpInside)
         return button
@@ -40,8 +42,11 @@ class ConversationsController: UIViewController {
     
     // MARK: - Actions
     @objc func showProfile() {
-        print("DEBUG: Show Profile")
-        logout()
+        let controller = ProfileController(style: .insetGrouped)
+        controller.delegate = self
+        let navigation = UINavigationController(rootViewController: controller)
+        navigation.modalPresentationStyle = .fullScreen
+        present(navigation, animated: true, completion: nil)
     }
     
     @objc func showNewMessage() {
@@ -55,8 +60,15 @@ class ConversationsController: UIViewController {
     
     // MARK: - API
     func fetchConversations() {
+        showLoader(true)
         Service.fetchConversations { conversations in
-            self.conversations = conversations
+            self.showLoader(false)
+            conversations.forEach { conversation in
+                let message = conversation.message
+                self.conversationsDictionary[message.chatPartnerId] = conversation
+            }
+            self.showLoader(false)
+            self.conversations = Array(self.conversationsDictionary.values)
             self.tableView.reloadData()
         }
     }
@@ -65,8 +77,6 @@ class ConversationsController: UIViewController {
         if Auth.auth().currentUser?.uid == nil {
             print("Debug: User is not Logged in...")
             presentLoginScreen()
-        } else {
-            print("Debug: User id is \(Auth.auth().currentUser?.uid)")
         }
     }
     
@@ -92,13 +102,12 @@ class ConversationsController: UIViewController {
     
     func configureLayout() {
         view.addSubview(newMessageButton)
-        newMessageButton.translatesAutoresizingMaskIntoConstraints = false
-        newMessageButton.heightAnchor.constraint(equalToConstant: 48).isActive = true
-        newMessageButton.widthAnchor.constraint(equalToConstant: 48).isActive = true
-        newMessageButton.clipsToBounds = true
-        newMessageButton.layer.cornerRadius = 24
-        newMessageButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -32).isActive = true
-        newMessageButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -32).isActive = true
+        newMessageButton.snp.makeConstraints {
+            $0.width.height.equalTo(48)
+            $0.right.equalTo(view.snp.right).offset(-32)
+            $0.bottom.equalTo(view.snp.bottom).offset(-32)
+        }
+        newMessageButton.layer.cornerRadius = 48 / 2
     }
     
     func configureTableView() {
@@ -116,6 +125,7 @@ class ConversationsController: UIViewController {
     func presentLoginScreen() {
         DispatchQueue.main.async {
             let controller = LoginController()
+            controller.delegate = self
             let navigation = UINavigationController(rootViewController: controller)
             navigation.modalPresentationStyle = .fullScreen
             self.present(navigation, animated: true, completion: nil)
@@ -150,7 +160,21 @@ extension ConversationsController: UITableViewDelegate {
 extension ConversationsController: NewMessageControllerDelegate {
     func controller(_ controller: NewMessageController, wantsToStartChatWith user: User) {
         print("User in conversation controller is \(user.username)")
-        controller.dismiss(animated: true, completion: nil)
+        dismiss(animated: true, completion: nil)
         showChatController(forUser: user)
+    }
+}
+
+extension ConversationsController: ProfileControllerDelegate {
+    func handleLogout() {
+        logout()
+    }
+}
+
+extension ConversationsController: AuthenticationDelegate {
+    func authenticationComplete() {
+        dismiss(animated: true, completion: nil)
+        configureUI()
+        fetchConversations()
     }
 }

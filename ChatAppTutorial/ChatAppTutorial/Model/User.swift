@@ -10,9 +10,9 @@ import Foundation
 struct User {
     let uid: String
     let profileImageUrl: String
-    let username: String
-    let fullname: String
-    let email: String
+    var username: String
+    var fullname: String
+    var email: String
     
     init(dictionary: [String: Any]) {
         self.uid = dictionary["uid"] as? String ?? ""
